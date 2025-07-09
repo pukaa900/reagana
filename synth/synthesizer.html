@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rea Ngana Kalimba Grid</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      overflow: hidden;
+    }
+    #gridCanvas {
+      background: #222;
+      display: block;
+      margin: 0 auto;
+      cursor: crosshair;
+    }
+    #controls {
+      padding: 10px;
+      background: #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    input, button {
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <label>BPM: <input type="number" id="bpmInput" value="120" min="40" max="300" /></label>
+    <button onclick="playSequence()">▶ Play</button>
+    <button onclick="downloadSequence()">💾 Download</button>
+  </div>
+  <canvas id="gridCanvas" width="1200" height="480"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gridCanvas");
+    const ctx = canvas.getContext("2d");
+    const bpmInput = document.getElementById("bpmInput");
+
+    const gridCols = 64; // 4 bars of 16th notes at 4/4
+    const gridRows = 15; // Kalimba-style pitch rows
+    const cellWidth = 20;
+    const cellHeight = 32;
+
+    const pitchLabels = ["C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F5","G5","A5","B5","C6"];
+    const notes = [];
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let x = 0; x < gridCols; x++) {
+        for (let y = 0; y < gridRows; y++) {
+          ctx.strokeStyle = "#333";
+          ctx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+        }
+      }
+      for (const note of notes) {
+        ctx.fillStyle = "#0f0";
+        ctx.fillRect(note.x * cellWidth, note.y * cellHeight, cellWidth, cellHeight);
+        ctx.fillStyle = "#000";
+        ctx.fillText(note.phoneme, note.x * cellWidth + 2, note.y * cellHeight + 14);
+      }
+    }
+
+    function getMousePos(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: Math.floor((evt.clientX - rect.left) / cellWidth),
+        y: Math.floor((evt.clientY - rect.top) / cellHeight)
+      };
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const pos = getMousePos(e);
+      const existing = notes.find(n => n.x === pos.x && n.y === pos.y);
+      if (existing) {
+        notes.splice(notes.indexOf(existing), 1);
+      } else {
+        const phoneme = prompt("Enter phoneme:");
+        if (phoneme) notes.push({ x: pos.x, y: pos.y, phoneme });
+      }
+      drawGrid();
+    });
+
+    function playSequence() {
+      const bpm = parseInt(bpmInput.value);
+      const beatDuration = 60 / bpm;
+      const sequence = [...notes].sort((a, b) => a.x - b.x);
+      let time = 0;
+      for (const note of sequence) {
+        const delay = note.x * (beatDuration / 4); // 1/16th note timing
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("playPhoneme", {
+            detail: {
+              phoneme: note.phoneme,
+              pitchIndex: note.y,
+              semitones: (note.y - 7), // C5 as middle pitch
+              time
+            }
+          }));
+        }, delay * 1000);
+        time = delay;
+      }
+    }
+
+    function downloadSequence() {
+      const json = JSON.stringify(notes);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "reangrid-sequence.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    drawGrid();
+  </script>
+</body>
+</html>

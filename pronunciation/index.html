@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <title>Pronunciation</title>
+    <script src="/src/utils.js"></script>
+    <!-- https://github.com/surrsurus/text-to-ipa -->
+    <script src="/src/text-to-ipa.js"></script>
+  </head>
+  <style>
+    .pronunciation {
+      margin-right: 10px;
+    }
+    #phonemes {
+      font-size: 72px;
+      font-weight: bold;
+      user-select: none;
+
+      -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+    }
+    #phonemes > .phoneme.spoken {
+      color: green;
+    }
+    #phonemes > .phoneme.current {
+      color: orange;
+    }
+    #phonemes > .phoneme.highlighted {
+      color: red;
+    }
+    #phonemes > .phoneme {
+      cursor: pointer;
+    }
+    .noselect {
+      -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+      user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+    }
+  </style>
+  <body>
+    <nav>
+      <a href="../../">home</a>
+    </nav>
+    <h1>Pronunciation</h1>
+    <input id="word" type="text" autocomplete="off" style="font-size: 72px" placeholder="word to pronounce" size="16" />
+    <div id="pronunciations">
+      <template>
+        <label class="pronunciation"><span></span><input type="radio" name="pronunciation" /></label>
+      </template>
+    </div>
+
+    <label
+      >play phoneme on hover <input type="checkbox" checked oninput="playPhonemeOnHover = event.target.checked"
+    /></label>
+
+    <div id="phonemes"></div>
+    <br />
+    <div id="buttons" style="display: none">
+      <button id="play">play</button>
+      <button id="reset">reset</button>
+    </div>
+  </body>
+  <script src="/pronunciation/src/script.js"></script>
+</html>
